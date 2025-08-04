@@ -4,6 +4,7 @@ import { AiAgent } from '@/components/aiagent';
 import { API } from '@/config/api';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useRef, useState } from 'react';
+// Adjust the import path based on your file structure
 
 interface Prompt {
   id: number;
@@ -25,7 +26,7 @@ interface ActiveAgentResponse {
 interface ApiResponse {
   message: string;
   data: {
-    ai_agent: AiAgentType;
+    ai_agent: any;
   };
 }
 
@@ -71,11 +72,7 @@ function getChatHistoryKey(public_id: string) {
 const AI_AGENT_URL = process.env.NEXT_PUBLIC_AI_AGENT_URL;
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-if (!AI_AGENT_URL || !API_BASE_URL) {
-  console.error('Environment variables NEXT_PUBLIC_AI_AGENT_URL and NEXT_PUBLIC_API_BASE_URL must be defined.');
-}
-
-export default function AgentDetails({ params }: { params: { agentSlug: string } }) {
+export default function AgentDetails() {
   const [agentDetails, setAgentDetails] = useState<AiAgentType | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -92,16 +89,22 @@ export default function AgentDetails({ params }: { params: { agentSlug: string }
   }, [messages]);
 
   useEffect(() => {
+    const pathParts = window.location.pathname.split('/');
+    const slug = pathParts[pathParts.length - 1];
+
     async function fetchAgentDetails(slug: string) {
       try {
         setLoading(true);
-        const activeResponse = await fetch(API.AI_AGENT_DATA_FROM_SLUG(slug), {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          cache: 'force-cache', // Cache API response for performance
-        });
+        const activeResponse = await fetch(
+          API.AI_AGENT_DATA_FROM_SLUG(slug),
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              // 'Authorization': `Bearer ${token}', // Uncomment and define token if needed
+            },
+          }
+        );
         if (!activeResponse.ok) throw new Error('Failed to check agent status');
         const activeData: ActiveAgentResponse = await activeResponse.json();
         const activeSlug = activeData.data.active_slug;
@@ -109,11 +112,7 @@ export default function AgentDetails({ params }: { params: { agentSlug: string }
 
         const response = await fetch(
           `${API_BASE_URL}/v4/ai-agent/get-agent/details/${activeSlug}`,
-          {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' },
-            cache: 'force-cache', // Cache API response
-          }
+          { method: 'GET', headers: { 'Content-Type': 'application/json' } }
         );
         if (!response.ok) throw new Error('Failed to fetch agent details');
         const data: ApiResponse = await response.json();
@@ -125,8 +124,8 @@ export default function AgentDetails({ params }: { params: { agentSlug: string }
       }
     }
 
-    fetchAgentDetails(params.agentSlug);
-  }, [router, params.agentSlug]);
+    fetchAgentDetails(slug);
+  }, [router]);
 
   useEffect(() => {
     if (!agentDetails) return;
@@ -141,9 +140,7 @@ export default function AgentDetails({ params }: { params: { agentSlug: string }
           setShowWelcome(false);
           setShowPrompts(false);
         }
-      } catch {
-        console.error('Error parsing chat history from localStorage');
-      }
+      } catch { }
     }
   }, [agentDetails]);
 
@@ -229,9 +226,7 @@ export default function AgentDetails({ params }: { params: { agentSlug: string }
             headers: { 'Content-Type': 'application/json' },
           });
           if (metaRes.ok) metaResults.push((await metaRes.json()).data);
-        } catch (err) {
-          console.error('Error fetching meta data:', err);
-        }
+        } catch (err) { }
       }
       if (metaResults.length > 0) {
         setMessages((prev) => [
@@ -240,7 +235,6 @@ export default function AgentDetails({ params }: { params: { agentSlug: string }
         ]);
       }
     } catch (error) {
-      console.error('Error in handleSendMessage:', error);
       setMessages((prev) => [
         ...prev,
         { text: 'Error fetching response.', sender: 'assistant' },
@@ -266,39 +260,33 @@ export default function AgentDetails({ params }: { params: { agentSlug: string }
     );
   }
 
-  // Ensure thumbnailUrl is an absolute URL for local development
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-  const thumbnailUrl = agentDetails?.avatar_image_url
-    ? agentDetails.avatar_image_url.startsWith('http')
-      ? agentDetails.avatar_image_url
-      : `${baseUrl}${agentDetails.avatar_image_url}`
-    : `${baseUrl}/thumbnail.jpg`;
-
+  const thumbnailUrl = agentDetails?.avatar_image_url || '/thumbnail.jpg';
   const pageTitle = agentDetails?.greeting_title || 'AI Agent';
   const pageDescription = agentDetails?.welcome_greeting || 'Interact with our AI agent on LinkaAI';
 
-  const boxStyles = {
-    className: `
-      fixed top-1/2 left-1/2
-      -translate-x-1/2 -translate-y-1/2
-      w-[90vw] max-w-[400px]
-      sm:max-w-[500px]
-      lg:max-w-[500px]
-      bg-white
-      rounded-2xl
-      shadow-2xl
-      border border-gray-200
-      flex flex-col
-      overflow-hidden
-      z-40
-      lg:h-[700px] xl:h-[800px]
-    `,
-    style: {
-      minHeight: '80vh',
-      maxHeight: '80vh',
-      height: 'auto',
-    },
-  };
+  // Define the styles in a variable
+const boxStyles = {
+  className: `
+    fixed top-1/2 left-1/2
+    -translate-x-1/2 -translate-y-1/2
+    w-[90vw] max-w-[400px]
+    sm:max-w-[500px]
+    lg:max-w-[500px]
+    bg-white
+    rounded-2xl
+    shadow-2xl
+    border border-gray-200
+    flex flex-col
+    overflow-hidden
+    z-40
+    lg:h-[700px] xl:h-[800px]
+  `,
+  style: {
+    minHeight: '80vh',
+    maxHeight: '80vh',
+    height: 'auto',
+  },
+};
 
   return (
     <AiAgent
