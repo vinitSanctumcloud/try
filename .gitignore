@@ -1,0 +1,60 @@
+# Node.js
+/node_modules
+
+# Next.js
+/.next
+/out
+/.next/cache
+
+# Production build output
+/dist
+/export
+
+# TypeScript cache
+*.tsbuildinfo
+
+# TypeScript script output
+*.js
+*.js.map
+*.d.ts
+*.d.ts.map
+
+# Env files
+.env
+.env.local
+.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Testing
+/coverage
+
+# Editor directories and system files
+.vscode/
+.DS_Store
+*.swp
+
+# Vercel deployment
+.vercel
+
+# Local databases (optional)
+*.sqlite
+*.db
+
+# Turbopack (if used)
+/turbo
+
+# Lint/Prettier cache
+.eslintcache
+.prettiercache
+
+# Bun (if using)
+/.bun
